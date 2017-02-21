@@ -11,10 +11,28 @@ public:
     UnityConfigFile();
     ~UnityConfigFile();
 
-    void readFile();
+    void createCfgFile();
+	int getModifyFileLen(FILE *pInf);
+	void createCfg();
 private:
-    long mfilelong;
+	long mCurInfPos;
+	long mCurOutfPos;
+    long mfilelen;
     long mbaseaddr;
+	long m0boffset;
+	long m0blen;
+	bool mbadd4;
+	bool mbadd8;
+	long mAddOffest;
+	long m0coffset;
+	long m0doffset;
+	long m0eoffset;
+	long m0foffset;
+	long m10offset;
+	long m11offset;
+	int mrendercount;
+	int mrenderlen;
+	char mrendername[13];
 
 };
 

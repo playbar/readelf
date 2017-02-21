@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
     UnityConfigFile cfgFile;
-    cfgFile.readFile();
+    cfgFile.createCfgFile();
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }

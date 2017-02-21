@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include "UnityConfigFile.h"
 #include "stdint.h"
+#include "memory.h"
 
 
 int32_t swapInt32(int32_t value)
@@ -17,9 +18,19 @@ int32_t swapInt32(int32_t value)
            ((value & 0xFF000000) >> 24) ;
 }
 
+unsigned int calc_align(unsigned int n, unsigned align)
+{
+	return ((n + align - 1) & (~(align - 1)));
+}
+
 UnityConfigFile::UnityConfigFile()
 {
-    mfilelong = 0;
+    mfilelen = 0;
+	mbadd4 = false;
+	mbadd8 = false;
+	mAddOffest = 0;
+	mCurInfPos = 0;
+	mCurOutfPos = 0;
 }
 
 UnityConfigFile::~UnityConfigFile()
@@ -27,45 +38,251 @@ UnityConfigFile::~UnityConfigFile()
 
 }
 
-void UnityConfigFile::readFile()
+int UnityConfigFile::getModifyFileLen(FILE *pInf)
 {
-    int tmp = 0;
-    FILE* pf = fopen("globalgamemanagers", "r" );
-    if( pf == NULL)
+	int err = 0;
+	int tmp = 0;
+	if (pInf == NULL)
+		return 0;
+	fseek(pInf, 0, SEEK_SET);
+
+	err = fseek(pInf, 4, SEEK_SET);
+	//err = fseek(pf, 4, SEEK_SET);
+	fread((char*)&mfilelen, 1, 4, pInf);   //  file length
+	mfilelen = swapInt32(mfilelen);	
+	//fread((char*)&mbaseaddr, 1, 4, pf);
+	err = fseek(pInf, 4, SEEK_CUR);
+	fread((char*)&mbaseaddr, 1, 4, pInf);
+	mbaseaddr = swapInt32(mbaseaddr); // base address
+
+	fseek(pInf, 20, SEEK_CUR);
+
+	int stcount = 0;
+	int everycount = 0;
+	fread(&stcount, 4, 1, pInf);
+	fread(&everycount, 4, 1, pInf);
+	stcount = swapInt32(stcount);
+	everycount = swapInt32(everycount);
+	everycount *= 4;
+	tmp = everycount * stcount;
+
+	fseek(pInf, stcount * everycount, SEEK_CUR);
+	fseek(pInf, 4, SEEK_CUR);
+	//fread( &tmp, 1, 4, pf);
+	fseek(pInf, 10 * 28, SEEK_CUR);
+	fseek(pInf, 8, SEEK_CUR);
+	fread(&m0boffset, 1, 4, pInf);
+	fread(&m0blen, 1, 4, pInf);
+
+	fseek(pInf, 20, SEEK_CUR);
+	fread(&m0coffset, 1, 4, pInf);
+	long coffset = m0blen + m0boffset + 4;
+	if (coffset > m0coffset &&  coffset < m0coffset + 4) {
+		mbadd4 = true;
+		mAddOffest = 4;
+	}
+	else if (coffset >= m0coffset + 4)
+	{
+		mbadd8 = true;
+		mAddOffest = 8;
+	}
+}
+
+void UnityConfigFile::createCfgFile()
+{
+	int err = 0;
+	int iTmp = 0;
+    char szTmp[1024];
+    FILE* pInf = fopen("globalgamemanagers", "rb+" );
+	FILE *pOutf = fopen("globalgamemanagers_out", "wb+");
+	getModifyFileLen(pInf);
+	fseek(pInf, 0, SEEK_SET);
+    if( pInf == NULL)
         return;
+	if (pOutf == NULL)
+		return;
+	memset(szTmp, 0, 1024);
+	fread(szTmp, 1, 4, pInf);
+	mCurInfPos += 4;
+	fwrite(szTmp, 1, 4, pOutf);
+	mCurOutfPos += 4;
+ 
+    fread((char*)&mfilelen, 1, 4, pInf );   //  file length
+	mCurInfPos += 4;
+    mfilelen = swapInt32( mfilelen);
+	mfilelen += mAddOffest;
+	mfilelen = swapInt32(mfilelen);
+	fwrite((char*)&mfilelen, 1, 4, pOutf);
+	mCurOutfPos += 4;
 
-    fseek( pf, 4, SEEK_CUR);
-    unsigned char data[1024];
-    fread((char*)&mfilelong, 4, 1, pf );   //  file length
-    mfilelong = swapInt32( mfilelong);
-
-    fseek( pf, 4, SEEK_CUR);
-    fread( &mbaseaddr, 4, 1, pf);
+	fread(szTmp, 1, 4, pInf);
+	mCurInfPos += 4;
+	fwrite(szTmp, 1, 4, pOutf);
+	mCurOutfPos += 4;
+    fread( (char*)&mbaseaddr, 1, 4, pInf);
+	mCurInfPos += 4;
+	fwrite((char*)&mbaseaddr, 1, 4, pOutf);
+	mCurOutfPos += 4;
     mbaseaddr = swapInt32(mbaseaddr); // base address
 
-    fseek( pf, 20, SEEK_CUR);
+	fread(szTmp, 1, 20, pInf);
+	mCurInfPos += 20;
+	fwrite(szTmp, 1, 20, pOutf);
+	mCurOutfPos += 20;
 
     int stcount = 0;
     int everycount = 0;
-    fread( &stcount, 4, 1, pf);
-    fread( &everycount, 4, 1, pf);
+    fread( &stcount, 4, 1, pInf);
+	mCurInfPos += 4;
+	fwrite(&stcount, 4, 1, pOutf);
+	mCurOutfPos += 4;
+    fread( &everycount, 4, 1, pInf);
+	mCurInfPos += 4;
+	fwrite(&everycount, 4, 1, pOutf);
+	mCurOutfPos += 4;
     stcount = swapInt32( stcount);
     everycount = swapInt32(everycount);
     everycount *= 4;
-    tmp = everycount * stcount;
+    //int tmp = everycount * stcount;
+	for (int i = 0; i < stcount; ++i)
+	{
+		fread(szTmp, everycount, 1, pInf);
+		mCurInfPos += everycount;
+		fwrite(szTmp, everycount, 1, pOutf);
+		mCurOutfPos += everycount;
+	}
+	fread(szTmp, 4, 1, pInf);
+	mCurInfPos += 4;
+	fwrite(szTmp, 4, 1, pOutf);
+	mCurOutfPos += 4;
 
-    fseek(pf, stcount * everycount, SEEK_CUR);
-//    lseek(pf, 4, SEEK_CUR);
-    fread( &tmp, 4, 1, pf);
-    fseek(pf, 10 * 24, SEEK_CUR);
-    fseek(pf, 12, SEEK_CUR);
-    int modifycount =0;
-    fread( &modifycount, 4, 1, pf);
+	fread(szTmp, 10 * 28, 1, pInf);
+	fwrite(szTmp, 10 * 28, 1, pOutf);
+	mCurInfPos += (10 * 28);
+	mCurOutfPos += (10 * 28);
 
+	fread(szTmp, 8, 1, pInf);
+	fwrite(szTmp, 8, 1, pOutf);
+	mCurInfPos += 8;
+	mCurOutfPos += 8;
+	fread(&m0boffset, 4, 1, pInf);
+	fwrite(&m0boffset, 4, 1, pOutf);
+	mCurInfPos += 4;
+	mCurOutfPos += 4;
 
+    fread( &m0blen, 4, 1, pInf);
+	iTmp = m0blen + 4;
+	fwrite(&iTmp, 4, 1, pOutf);
+	mCurInfPos += 4;
+	mCurOutfPos += 4;
+	
+	//fseek(pInf, 20, SEEK_CUR);
+	fread(szTmp, 20, 1, pInf);
+	fwrite(szTmp, 20, 1, pOutf);
+	mCurInfPos += 20;
+	mCurOutfPos += 20;
+	fread(&m0coffset, 1, 4, pInf);
+	long coffset = m0blen + m0boffset + 4;
+	if (coffset > m0coffset &&  coffset < m0coffset + 4) {
+		mbadd4 = true;
+		mAddOffest = 4;
+	}
+	else if (coffset >= m0coffset + 4)
+	{
+		mbadd8 = true;
+		mAddOffest = 8;
+	}
 
-//    mfilelong = atoi((char*)data);
+	m0coffset += mAddOffest;
+	fwrite(&m0coffset, 4, 1, pOutf);
+	mCurInfPos += 4;
+	mCurOutfPos += 4;
 
-    fclose(pf);
+	for (int i = 0x0d; i <= stcount; ++i)
+	{
+		fread(szTmp, 24, 1, pInf);
+		fwrite(szTmp, 24, 1, pOutf);
+		mCurInfPos += 24;
+		mCurOutfPos += 24;
+		fread(&m0doffset, 4, 1, pInf);
+		m0doffset += mAddOffest;
+		fwrite(&m0doffset, 4, 1, pOutf);
+		mCurInfPos += 4;
+		mCurOutfPos += 4;
+	}
+
+	iTmp = mbaseaddr + m0boffset - mCurInfPos;
+	char *pdata = new char[iTmp + 1];
+	fread(pdata, iTmp, 1, pInf);
+	fwrite(pdata, iTmp, 1, pOutf);
+	delete[]pdata;
+	mCurInfPos += iTmp;
+	mCurOutfPos += iTmp;
+
+	int strlistlen = 0; 
+	int strlen = 0;
+	fread(&strlistlen, 4, 1, pInf);
+	fwrite(&strlistlen, 4, 1, pOutf);
+	mCurInfPos += 4;
+	mCurOutfPos += 4;
+	for (int i = 0; i < strlistlen; ++i)
+	{
+		fread(&strlen, 4, 1, pInf);
+		fwrite(&strlen, 4, 1, pOutf);
+		mCurInfPos += 4;
+		mCurOutfPos += 4;
+		strlen = calc_align(strlen, 8);
+		fread(szTmp, strlen, 1, pInf);
+		fwrite(szTmp, strlen, 1, pOutf);
+		mCurInfPos += strlen;
+		mCurOutfPos += strlen;
+	}
+
+	//fseek(pInf, 4, SEEK_CUR);
+	fread(&iTmp, 4, 1, pInf);
+	fwrite(&iTmp, 4, 1, pOutf);
+	mCurInfPos += 4;
+	mCurOutfPos += 4;
+
+	fread(&mrendercount, 4, 1, pInf);
+	fwrite(&mrendercount, 4, 1, pOutf);
+	mCurInfPos += 4;
+	mCurOutfPos += 4;
+	fread(&mrenderlen, 4, 1, pInf);	
+	mCurInfPos += 4;
+	fread(mrendername, 1, mrenderlen, pInf);
+	mrenderlen += 1;
+	fwrite(&mrenderlen, 4, 1, pOutf);
+	mCurOutfPos += 4;
+	mCurInfPos += mrenderlen;
+	memset(mrendername, 0, 13);
+	memcpy(mrendername, "cardboard", 9);
+	fwrite(mrendername, 12, 1, pOutf);
+	mCurOutfPos += 12;
+	
+	iTmp = mbaseaddr + m0coffset - mCurInfPos - mAddOffest;
+	int bc = m0coffset - m0boffset;
+	pdata = new char[iTmp + 1];
+	fread(pdata, iTmp, 1, pInf);
+	mCurInfPos += iTmp;
+	fwrite(pdata, iTmp, 1, pOutf);
+	memset(pdata, 0, 4);
+	fwrite(pdata, 4, 1, pOutf);
+	mCurOutfPos += (iTmp + 4);
+	delete[]pdata;
+
+	while ((iTmp = fread(szTmp, 1, 1024, pInf)) != 0)
+	{
+		fwrite(szTmp, 1, iTmp, pOutf);
+	}
+
+    fclose(pInf);
+	fclose(pOutf);
     return;
+}
+
+void UnityConfigFile::createCfg()
+{
+	//FILE* pInf = fopen("globalgamemanagers", "rb+");
+
 }
