@@ -16,7 +16,7 @@ public:
 	void createCfg();
 private:
 	long mCurInfPos;
-	long mCurOutfPos;
+	//long mCurOutfPos;
     long mfilelen;
     long mbaseaddr;
 	long m0boffset;
@@ -26,10 +26,10 @@ private:
 	long mAddOffest;
 	long m0coffset;
 	long m0doffset;
-	long m0eoffset;
-	long m0foffset;
-	long m10offset;
-	long m11offset;
+	//long m0eoffset;
+	//long m0foffset;
+	//long m10offset;
+	//long m11offset;
 	int mrendercount;
 	int mrenderlen;
 	char mrendername[13];
