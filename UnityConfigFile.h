@@ -11,11 +11,13 @@ public:
     UnityConfigFile();
     ~UnityConfigFile();
 
-    void createCfgFile();
+    void changeDaydreamToCardboard(char *pInFile, char *pOutFile);
+	void addCardboardInDaydream(char *pInFile, char *pOutFile);
 	int getModifyFileLen(FILE *pInf);
 	void createCfg();
 private:
 	long mCurInfPos;
+	long mVersoin;
 	//long mCurOutfPos;
     long mfilelen;
     long mbaseaddr;
