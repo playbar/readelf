@@ -70,17 +70,17 @@ int UnityConfigFile::getModifyFileLen(FILE *pInf)
 	//fread( &tmp, 1, 4, pf);
 	fseek(pInf, 10 * 28, SEEK_CUR);
 	fseek(pInf, 8, SEEK_CUR);
-	fread(&m0boffset, 1, 4, pInf);
-	fread(&m0blen, 1, 4, pInf);
+	fread(&m0Boffset, 1, 4, pInf);
+	fread(&m0Blen, 1, 4, pInf);
 
 	fseek(pInf, 20, SEEK_CUR);
-	fread(&m0coffset, 1, 4, pInf);
-	long coffset = m0blen + m0boffset + 4;
-	if (coffset > m0coffset &&  coffset < m0coffset + 4) {
+	fread(&m0Coffset, 1, 4, pInf);
+	long coffset = m0Blen + m0Boffset + 4;
+	if (coffset > m0Coffset &&  coffset < m0Coffset + 4) {
 		mbadd4 = true;
 		mAddOffest = 4;
 	}
-	else if (coffset >= m0coffset + 4)
+	else if (coffset >= m0Coffset + 4)
 	{
 		mbadd8 = true;
 		mAddOffest = 8;
@@ -153,12 +153,12 @@ void UnityConfigFile::changeDaydreamToCardboard(char *pInFile, char *pOutFile)
 	fread(szTmp, 8, 1, pInf);
 	fwrite(szTmp, 8, 1, pOutf);
 	mCurInfPos += 8;
-	fread(&m0boffset, 4, 1, pInf);
-	fwrite(&m0boffset, 4, 1, pOutf);
+	fread(&m0Boffset, 4, 1, pInf);
+	fwrite(&m0Boffset, 4, 1, pOutf);
 	mCurInfPos += 4;
 
-    fread( &m0blen, 4, 1, pInf);
-	iTmp = m0blen + 4;
+    fread( &m0Blen, 4, 1, pInf);
+	iTmp = m0Blen + 4;
 	fwrite(&iTmp, 4, 1, pOutf);
 	mCurInfPos += 4;
 	
@@ -166,20 +166,20 @@ void UnityConfigFile::changeDaydreamToCardboard(char *pInFile, char *pOutFile)
 	fread(szTmp, 20, 1, pInf);
 	fwrite(szTmp, 20, 1, pOutf);
 	mCurInfPos += 20;
-	fread(&m0coffset, 1, 4, pInf);
-	long coffset = m0blen + m0boffset + 4;
-	if (coffset > m0coffset &&  coffset < m0coffset + 4) {
+	fread(&m0Coffset, 1, 4, pInf);
+	long coffset = m0Blen + m0Boffset + 4;
+	if (coffset > m0Coffset &&  coffset < m0Coffset + 4) {
 		mbadd4 = true;
 		mAddOffest = 4;
 	}
-	else if (coffset >= m0coffset + 4)
+	else if (coffset >= m0Coffset + 4)
 	{
 		mbadd8 = true;
 		mAddOffest = 8;
 	}
 
-	m0coffset += mAddOffest;
-	fwrite(&m0coffset, 4, 1, pOutf);
+	m0Coffset += mAddOffest;
+	fwrite(&m0Coffset, 4, 1, pOutf);
 	mCurInfPos += 4;
 
 	for (int i = 0x0d; i <= stcount; ++i)
@@ -187,13 +187,13 @@ void UnityConfigFile::changeDaydreamToCardboard(char *pInFile, char *pOutFile)
 		fread(szTmp, 24, 1, pInf);
 		fwrite(szTmp, 24, 1, pOutf);
 		mCurInfPos += 24;
-		fread(&m0doffset, 4, 1, pInf);
-		m0doffset += mAddOffest;
-		fwrite(&m0doffset, 4, 1, pOutf);
+		fread(&m0Doffset, 4, 1, pInf);
+		m0Doffset += mAddOffest;
+		fwrite(&m0Doffset, 4, 1, pOutf);
 		mCurInfPos += 4;
 	}
 
-	iTmp = mbaseaddr + m0boffset - mCurInfPos;
+	iTmp = mbaseaddr + m0Boffset - mCurInfPos;
 	char *pdata = new char[iTmp + 1];
 	fread(pdata, iTmp, 1, pInf);
 	fwrite(pdata, iTmp, 1, pOutf);
@@ -244,7 +244,7 @@ void UnityConfigFile::changeDaydreamToCardboard(char *pInFile, char *pOutFile)
 	memcpy(mrendername, "cardboard", 9);
 	fwrite(mrendername, 12, 1, pOutf);
 	
-	iTmp = mbaseaddr + m0coffset - mCurInfPos - 4;
+	iTmp = mbaseaddr + m0Coffset - mCurInfPos - 4;
 	pdata = new char[iTmp + 1];
 	fread(pdata, iTmp, 1, pInf);
 	mCurInfPos += iTmp;
@@ -303,19 +303,27 @@ void UnityConfigFile::addCardboardInDaydream(char *pInFile, char *pOutFile)
 	fwrite((char*)&mbaseaddr, 1, 4, pOutf);
 	mbaseaddr = swapInt32(mbaseaddr); // base address
 
-	int verLen = 0;
 	if (mVersoin == 15)
 	{
-		verLen = 20;
+		addCardInDay5_4(pInf, pOutf);
 	}
 	else if (mVersoin == 0x11)
 	{
-		verLen = 14;
+		addCardInDay5_6(pInf, pOutf);
 	}
 
-	fread(szTmp, verLen, 1, pInf);
-	mCurInfPos += verLen;
-	fwrite(szTmp, verLen, 1, pOutf);
+	fclose(pInf);
+	fclose(pOutf);
+	return;
+}
+
+void UnityConfigFile::addCardInDay5_4(FILE *pInf, FILE *pOutf)
+{
+	int iTmp = 0;
+	char szTmp[1024];
+	fread(szTmp, 20, 1, pInf);
+	mCurInfPos += 20;
+	fwrite(szTmp, 20, 1, pOutf);
 
 	int stcount = 0;
 	int everycount = 0;
@@ -346,12 +354,12 @@ void UnityConfigFile::addCardboardInDaydream(char *pInFile, char *pOutFile)
 	fread(szTmp, 8, 1, pInf);
 	fwrite(szTmp, 8, 1, pOutf);
 	mCurInfPos += 8;
-	fread(&m0boffset, 4, 1, pInf);
-	fwrite(&m0boffset, 4, 1, pOutf);
+	fread(&m0Boffset, 4, 1, pInf);
+	fwrite(&m0Boffset, 4, 1, pOutf);
 	mCurInfPos += 4;
 
-	fread(&m0blen, 4, 1, pInf);
-	iTmp = m0blen + 16;
+	fread(&m0Blen, 4, 1, pInf);
+	iTmp = m0Blen + 16;
 	fwrite(&iTmp, 4, 1, pOutf);    //length + 16
 	mCurInfPos += 4;
 
@@ -360,9 +368,9 @@ void UnityConfigFile::addCardboardInDaydream(char *pInFile, char *pOutFile)
 	fwrite(szTmp, 20, 1, pOutf);
 	mCurInfPos += 20;
 
-	fread(&m0coffset, 1, 4, pInf);
+	fread(&m0Coffset, 1, 4, pInf);
 	mAddOffest = 16;
-	iTmp = m0coffset + mAddOffest;
+	iTmp = m0Coffset + mAddOffest;
 	fwrite(&iTmp, 4, 1, pOutf);
 	mCurInfPos += 4;
 
@@ -372,13 +380,13 @@ void UnityConfigFile::addCardboardInDaydream(char *pInFile, char *pOutFile)
 		fwrite(szTmp, 24, 1, pOutf);
 		mCurInfPos += 24;
 
-		fread(&m0doffset, 4, 1, pInf);
-		iTmp = m0doffset + mAddOffest;
+		fread(&m0Doffset, 4, 1, pInf);
+		iTmp = m0Doffset + mAddOffest;
 		fwrite(&iTmp, 4, 1, pOutf);
 		mCurInfPos += 4;
 	}
 
-	iTmp = mbaseaddr + m0boffset - mCurInfPos;
+	iTmp = mbaseaddr + m0Boffset - mCurInfPos;
 	char *pdata = new char[iTmp + 1];
 	fread(pdata, iTmp, 1, pInf);
 	fwrite(pdata, iTmp, 1, pOutf);
@@ -429,9 +437,130 @@ void UnityConfigFile::addCardboardInDaydream(char *pInFile, char *pOutFile)
 	{
 		fwrite(szTmp, 1, iTmp, pOutf);
 	}
+	return;
+}
 
-	fclose(pInf);
-	fclose(pOutf);
+void UnityConfigFile::addCardInDay5_6(FILE *pInf, FILE *pOutf)
+{
+	int iTmp = 0;
+	char szTmp[1024];
+	memset(szTmp, 0, 1024);
+	fread(szTmp, 14, 1, pInf);
+	mCurInfPos += 14;
+	fwrite(szTmp, 14, 1, pOutf);
+
+	int stcount = 0;
+	int everycount = 0;
+	fread(&stcount, 4, 1, pInf);
+	mCurInfPos += 4;
+	fwrite(&stcount, 4, 1, pOutf);
+	fread(&everycount, 4, 1, pInf);
+	mCurInfPos += 4;
+	fwrite(&everycount, 4, 1, pOutf);
+	stcount = swapInt32(stcount);
+	everycount = swapInt32(everycount);
+	everycount *= 4;
+	//int tmp = everycount * stcount;
+	for (int i = 0; i < stcount; ++i)
+	{
+		fread(szTmp, 23, 1, pInf);
+		mCurInfPos += 23;
+		fwrite(szTmp, 23, 1, pOutf);
+	}
+	fread(szTmp, 6, 1, pInf);
+	mCurInfPos += 6;
+	fwrite(szTmp, 6, 1, pOutf);
+
+	fread(szTmp, 10 * 20, 1, pInf);
+	fwrite(szTmp, 10 * 20, 1, pOutf);
+	mCurInfPos += (10 * 20);
+
+	fread(szTmp, 8, 1, pInf);
+	fwrite(szTmp, 8, 1, pOutf);
+	mCurInfPos += 8;
+	fread(&m0Boffset, 4, 1, pInf);
+	fwrite(&m0Boffset, 4, 1, pOutf);
+	mCurInfPos += 4;
+
+	fread(&m0Blen, 4, 1, pInf);
+	iTmp = m0Blen + 16;
+	fwrite(&iTmp, 4, 1, pOutf);    //length + 16
+	mCurInfPos += 4;
+
+	//fseek(pInf, 20, SEEK_CUR);
+	fread(szTmp, 12, 1, pInf);
+	fwrite(szTmp, 12, 1, pOutf);
+	mCurInfPos += 12;
+
+	fread(&m0Coffset, 1, 4, pInf);
+	mAddOffest = 16;
+	iTmp = m0Coffset + mAddOffest;
+	fwrite(&iTmp, 4, 1, pOutf);
+	mCurInfPos += 4;
+
+	for (int i = 0x0d; i <= stcount; ++i)
+	{
+		fread(szTmp, 16, 1, pInf);
+		fwrite(szTmp, 16, 1, pOutf);
+		mCurInfPos += 16;
+
+		fread(&m0Doffset, 4, 1, pInf);
+		iTmp = m0Doffset + mAddOffest;
+		fwrite(&iTmp, 4, 1, pOutf);
+		mCurInfPos += 4;
+	}
+
+	iTmp = mbaseaddr + m0Boffset - mCurInfPos;
+	char *pdata = new char[iTmp + 1];
+	fread(pdata, iTmp, 1, pInf);
+	mCurInfPos += iTmp;
+	fwrite(pdata, iTmp, 1, pOutf);
+	delete[]pdata;
+	
+	int strlistlen = 0;
+	int strlen = 0;
+	fread(&strlistlen, 4, 1, pInf);
+	fwrite(&strlistlen, 4, 1, pOutf);
+	mCurInfPos += 4;
+	for (int i = 0; i < strlistlen; ++i)  //¶ÁÈ¡°üÃû
+	{
+		fread(&strlen, 4, 1, pInf);
+		fwrite(&strlen, 4, 1, pOutf);
+		mCurInfPos += 4;
+		strlen = calc_align(strlen, 4);
+		fread(szTmp, strlen, 1, pInf);
+		fwrite(szTmp, strlen, 1, pOutf);
+		mCurInfPos += strlen;
+	}
+
+	//fseek(pInf, 4, SEEK_CUR);
+	fread(&iTmp, 4, 1, pInf);
+	fwrite(&iTmp, 4, 1, pOutf);
+	mCurInfPos += 4;
+	for (int i = 0; i < iTmp; ++i)
+	{
+		fread(&strlen, 4, 1, pInf);
+		fwrite(&strlen, 4, 1, pOutf);
+		mCurInfPos += 4;
+		strlen = calc_align(strlen, 4);
+		fread(szTmp, strlen, 1, pInf);
+		fwrite(szTmp, strlen, 1, pOutf);
+		mCurInfPos += strlen;
+	}
+	fread(&mrendercount, 4, 1, pInf);
+	mCurInfPos += 4;
+	mrendercount += 1;
+	fwrite(&mrendercount, 4, 1, pOutf);
+	iTmp = 9;
+	fwrite(&iTmp, 4, 1, pOutf);
+	memset(mrendername, 0, 13);
+	memcpy(mrendername, "cardboard", 9);
+	fwrite(mrendername, 12, 1, pOutf);
+
+	while ((iTmp = fread(szTmp, 1, 1024, pInf)) != 0)
+	{
+		fwrite(szTmp, 1, iTmp, pOutf);
+	}
 	return;
 }
 

@@ -13,6 +13,8 @@ public:
 
     void changeDaydreamToCardboard(char *pInFile, char *pOutFile);
 	void addCardboardInDaydream(char *pInFile, char *pOutFile);
+	void addCardInDay5_4(FILE *pInf, FILE *pOutf);
+	void addCardInDay5_6(FILE *pInf, FILE *pOutf);
 	int getModifyFileLen(FILE *pInf);
 	void createCfg();
 private:
@@ -21,17 +23,13 @@ private:
 	//long mCurOutfPos;
     long mfilelen;
     long mbaseaddr;
-	long m0boffset;
-	long m0blen;
+	long m0Boffset;
+	long m0Blen;
 	bool mbadd4;
 	bool mbadd8;
 	long mAddOffest;
-	long m0coffset;
-	long m0doffset;
-	//long m0eoffset;
-	//long m0foffset;
-	//long m10offset;
-	//long m11offset;
+	long m0Coffset;
+	long m0Doffset;
 	int mrendercount;
 	int mrenderlen;
 	char mrendername[13];
