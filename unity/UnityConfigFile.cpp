@@ -205,7 +205,7 @@ void UnityConfigFile::changeDaydreamToCardboard(char *pInFile, char *pOutFile)
 	fread(&strlistlen, 4, 1, pInf);
 	fwrite(&strlistlen, 4, 1, pOutf);
 	mCurInfPos += 4;
-	for (int i = 0; i < strlistlen; ++i)  //读取包名
+	for (int i = 0; i < strlistlen; ++i)  //锟斤拷取锟斤拷锟斤拷
 	{
 		fread(&strlen, 4, 1, pInf);
 		fwrite(&strlen, 4, 1, pOutf);
@@ -277,11 +277,12 @@ void UnityConfigFile::addCardboardInDaydream(char *pInFile, char *pOutFile)
 	char szTmp[1024];
 	FILE* pInf = fopen(pInFile, "rb+");
 	FILE *pOutf = fopen(pOutFile, "wb+");
-	fseek(pInf, 0, SEEK_SET);
+
 	if (pInf == NULL)
 		return;
 	if (pOutf == NULL)
 		return;
+	fseek(pInf, 0, SEEK_SET);
 	memset(szTmp, 0, 1024);
 	fread(&iTmp, 4, 1, pInf);
 	fwrite(&iTmp, 4, 1, pOutf);
@@ -398,7 +399,7 @@ void UnityConfigFile::addCardInDay5_4(FILE *pInf, FILE *pOutf)
 	fread(&strlistlen, 4, 1, pInf);
 	fwrite(&strlistlen, 4, 1, pOutf);
 	mCurInfPos += 4;
-	for (int i = 0; i < strlistlen; ++i)  //读取包名
+	for (int i = 0; i < strlistlen; ++i)  //
 	{
 		fread(&strlen, 4, 1, pInf);
 		fwrite(&strlen, 4, 1, pOutf);
@@ -522,7 +523,7 @@ void UnityConfigFile::addCardInDay5_6(FILE *pInf, FILE *pOutf)
 	fread(&strlistlen, 4, 1, pInf);
 	fwrite(&strlistlen, 4, 1, pOutf);
 	mCurInfPos += 4;
-	for (int i = 0; i < strlistlen; ++i)  //读取包名
+	for (int i = 0; i < strlistlen; ++i)  //
 	{
 		fread(&strlen, 4, 1, pInf);
 		fwrite(&strlen, 4, 1, pOutf);

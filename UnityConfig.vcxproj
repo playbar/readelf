@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="UnityConfig.cpp" />
-    <ClCompile Include="UnityConfigFile.cpp" />
+    <ClCompile Include="unity\UnityConfig.cpp" />
+    <ClCompile Include="unity\UnityConfigFile.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="UnityConfigFile.h" />
+    <ClInclude Include="unity\UnityConfigFile.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B517A979-C6C3-4F03-B608-8A0A23445A41}</ProjectGuid>
@@ -95,6 +95,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>unity;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
