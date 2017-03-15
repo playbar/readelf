@@ -8,9 +8,11 @@ add_executable(CLionTest ${SOURCE_FILES})
 
 MESSAGE("make files")
 
+
 set(SOURCE_FILES1 src/main2.cpp src/CTest.cpp )
 add_executable(CLionTest2 ${SOURCE_FILES1})
 
+# UnityConfig
 set(UnityFile  unity/UnityConfigFile.cpp unity/UnityConfigFile.h unity/UnityConfig.cpp)
 add_executable(UnityConfig ${UnityFile})
 

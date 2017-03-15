@@ -446,9 +446,21 @@ void UnityConfigFile::addCardInDay5_6(FILE *pInf, FILE *pOutf)
 	int iTmp = 0;
 	char szTmp[1024];
 	memset(szTmp, 0, 1024);
-	fread(szTmp, 14, 1, pInf);
-	mCurInfPos += 14;
-	fwrite(szTmp, 14, 1, pOutf);
+	fread(szTmp, 4, 1, pInf);
+	mCurInfPos += 4;
+	fwrite(szTmp, 4, 1, pOutf);
+	memset(szTmp, 0, 1024);
+	fread(szTmp, 10, 1, pInf);
+	mCurInfPos += 10;
+	fwrite(szTmp, 10, 1, pOutf);
+	//5_6_0b8 or 5_6_0b11
+	const char *pos0b11 = strstr(szTmp, "0b11");
+	if (pos0b11 != NULL) {
+		fread(szTmp, 1, 1, pInf);
+		mCurInfPos += 1;
+		fwrite(szTmp, 1, 1, pOutf);
+	}
+
 
 	int stcount = 0;
 	int everycount = 0;
@@ -468,9 +480,17 @@ void UnityConfigFile::addCardInDay5_6(FILE *pInf, FILE *pOutf)
 		mCurInfPos += 23;
 		fwrite(szTmp, 23, 1, pOutf);
 	}
-	fread(szTmp, 6, 1, pInf);
-	mCurInfPos += 6;
-	fwrite(szTmp, 6, 1, pOutf);
+	if (pos0b11 != NULL)
+	{
+		fread(szTmp, 5, 1, pInf);
+		mCurInfPos += 5;
+		fwrite(szTmp, 5, 1, pOutf);
+	}
+	else {
+		fread(szTmp, 6, 1, pInf);
+		mCurInfPos += 6;
+		fwrite(szTmp, 6, 1, pOutf);
+	}
 
 	fread(szTmp, 10 * 20, 1, pInf);
 	fwrite(szTmp, 10 * 20, 1, pOutf);
@@ -482,7 +502,7 @@ void UnityConfigFile::addCardInDay5_6(FILE *pInf, FILE *pOutf)
 	fread(&m0Boffset, 4, 1, pInf);
 	fwrite(&m0Boffset, 4, 1, pOutf);
 	mCurInfPos += 4;
-
+	
 	fread(&m0Blen, 4, 1, pInf);
 	iTmp = m0Blen + 16;
 	fwrite(&iTmp, 4, 1, pOutf);    //length + 16
