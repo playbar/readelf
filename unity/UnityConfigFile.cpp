@@ -455,7 +455,8 @@ void UnityConfigFile::addCardInDay5_6(FILE *pInf, FILE *pOutf)
 	fwrite(szTmp, 10, 1, pOutf);
 	//5_6_0b8 or 5_6_0b11
 	const char *pos0b11 = strstr(szTmp, "0b11");
-	if (pos0b11 != NULL) {
+	const char *pos0b10 = strstr(szTmp, "0b10");
+	if (pos0b11 != NULL || pos0b10 != NULL ) {
 		fread(szTmp, 1, 1, pInf);
 		mCurInfPos += 1;
 		fwrite(szTmp, 1, 1, pOutf);
@@ -480,7 +481,7 @@ void UnityConfigFile::addCardInDay5_6(FILE *pInf, FILE *pOutf)
 		mCurInfPos += 23;
 		fwrite(szTmp, 23, 1, pOutf);
 	}
-	if (pos0b11 != NULL)
+	if (pos0b11 != NULL || pos0b10 != NULL )
 	{
 		fread(szTmp, 5, 1, pInf);
 		mCurInfPos += 5;
