@@ -18,7 +18,7 @@ int addSectionFun(char*, char*, unsigned int);
 
 int main()
 {
-    addSectionFun("D:\libhello-jni.so", ".jiangwei", 0x1000);
+    addSectionFun("libreverse.so", ".jiangwei", 0x1000);
     return 0;
 }
 
