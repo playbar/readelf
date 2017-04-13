@@ -3,30 +3,33 @@ project(clionpro)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fpermissive -fvisibility=hidden -Wall -std=c++11" )
 
-set(CMAKE_CXX_STANDARD 11)
+add_definitions(-DBINDIR='"$(bindir)"')
 
-set(SOURCE_FILES src/main.cpp src/CTest.cpp src/CTest.h parseso/ParseSo.cpp)
-add_executable(CLionTest ${SOURCE_FILES})
+add_subdirectory(zlib)
+
+set(CMAKE_CXX_STANDARD 11)
 
 MESSAGE("make files")
 
+set(SOURCE_READELF
+        libiberty/argv.c
+        libiberty/xexit.c
+        libiberty/xstrdup.c
+        libiberty/lbasename.c
+        libiberty/xmalloc.c
+        libiberty/dwarfnames.c
+        libiberty/safe-ctype.c
+        binutils/readelf.c
+        binutils/dwarf.c
+        binutils/elfcomm.c
+        binutils/unwind-ia64.c
+        binutils/version.c)
+INCLUDE_DIRECTORIES(include zlib src bfd include/elf)
 
-set(SOURCE_FILES1 src/main2.cpp src/CTest.cpp )
-add_executable(CLionTest2 ${SOURCE_FILES1})
-
-set(SOURCE_PARSESO parseso/ParseSo.cpp parseso/elf.h)
-add_executable(ParseSo ${SOURCE_PARSESO})
-
-
-set(SOURCE_READELF readelf/arm.h readelf/bfd.h
-                    readelf/dwarf2.cpp readelf/dwarf2.h
-                    readelf/elf.h readelf/hash.cpp
-                    readelf/objalloc.cpp readelf/objalloc.h
-                    readelf/ReadELF.cpp readelf/section.cpp)
 add_executable(readelf ${SOURCE_READELF})
 
-# UnityConfig
-set(UnityFile  unity/UnityConfigFile.cpp unity/UnityConfigFile.h unity/UnityConfig.cpp)
-add_executable(UnityConfig ${UnityFile})
+target_link_libraries(readelf zlibstatic)
+
+
 
 #target_link_libraries()
