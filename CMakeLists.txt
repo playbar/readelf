@@ -31,7 +31,7 @@ add_executable(readelf ${SOURCE_READELF})
 target_link_libraries(readelf zlibstatic)
 
 ############################
-# UnityConfig
+# Test
 set(Test  test/configFile.cpp test/configFile.h test/config.cpp)
 add_executable(Test ${Test})
 
