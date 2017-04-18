@@ -5700,8 +5700,29 @@ get_compression_header (Elf_Internal_Chdr *chdr, unsigned char *buf)
     }
 }
 
-static int
-process_section_headers (FILE * file)
+#define CHECK_ENTSIZE_VALUES(section, i, size32, size64)		\
+  do									\
+    {									\
+      bfd_size_type expected_entsize = is_32bit_elf ? size32 : size64;	\
+      if (section->sh_entsize != expected_entsize)			\
+	{								\
+	  char buf[40];							\
+	  sprintf_vma (buf, section->sh_entsize);			\
+	  /* Note: coded this way so that there is a single string for  \
+	     translation.  */ \
+	  error (_("Section %d has invalid sh_entsize of %s\n"), i, buf); \
+	  error (_("(Using the expected size of %u for the rest of this dump)\n"), \
+		   (unsigned) expected_entsize);			\
+	  section->sh_entsize = expected_entsize;			\
+	}								\
+    }									\
+  while (0)
+
+#define CHECK_ENTSIZE(section, i, type)					\
+  CHECK_ENTSIZE_VALUES (section, i, sizeof (Elf32_External_##type),	    \
+			sizeof (Elf64_External_##type))
+
+static int process_section_headers (FILE * file)
 {
     Elf_Internal_Shdr * section;
     unsigned int i;
@@ -5712,11 +5733,9 @@ process_section_headers (FILE * file)
     {
         /* PR binutils/12467.  */
         if (elf_header.e_shoff != 0)
-            warn (_("possibly corrupt ELF file header - it has a non-zero"
-                            " section header offset, but no section headers\n"));
+            warn (_("possibly corrupt ELF file header - it has a non-zero section header offset, but no section headers\n"));
         else if (do_sections)
             printf (_("\nThere are no sections in this file.\n"));
-
         return 1;
     }
 
@@ -5733,8 +5752,7 @@ process_section_headers (FILE * file)
         return 0;
 
     /* Read in the string table, so that we have names to display.  */
-    if (elf_header.e_shstrndx != SHN_UNDEF
-        && elf_header.e_shstrndx < elf_header.e_shnum)
+    if (elf_header.e_shstrndx != SHN_UNDEF && elf_header.e_shstrndx < elf_header.e_shnum)
     {
         section = section_headers + elf_header.e_shstrndx;
 
@@ -5803,28 +5821,6 @@ process_section_headers (FILE * file)
             break;
     }
 
-#define CHECK_ENTSIZE_VALUES(section, i, size32, size64)		\
-  do									\
-    {									\
-      bfd_size_type expected_entsize = is_32bit_elf ? size32 : size64;	\
-      if (section->sh_entsize != expected_entsize)			\
-	{								\
-	  char buf[40];							\
-	  sprintf_vma (buf, section->sh_entsize);			\
-	  /* Note: coded this way so that there is a single string for  \
-	     translation.  */ \
-	  error (_("Section %d has invalid sh_entsize of %s\n"), i, buf); \
-	  error (_("(Using the expected size of %u for the rest of this dump)\n"), \
-		   (unsigned) expected_entsize);			\
-	  section->sh_entsize = expected_entsize;			\
-	}								\
-    }									\
-  while (0)
-
-#define CHECK_ENTSIZE(section, i, type)					\
-  CHECK_ENTSIZE_VALUES (section, i, sizeof (Elf32_External_##type),	    \
-			sizeof (Elf64_External_##type))
-
     for (i = 0, section = section_headers;
          i < elf_header.e_shnum;
          i++, section++)
@@ -5842,8 +5838,7 @@ process_section_headers (FILE * file)
             CHECK_ENTSIZE (section, i, Sym);
             dynamic_symbols = GET_ELF_SYMBOLS (file, section, & num_dynamic_syms);
         }
-        else if (section->sh_type == SHT_STRTAB
-                 && streq (name, ".dynstr"))
+        else if (section->sh_type == SHT_STRTAB && streq (name, ".dynstr"))
         {
             if (dynamic_strings != NULL)
             {
@@ -5908,25 +5903,20 @@ process_section_headers (FILE * file)
                 request_dump_bynumber (i, DEBUG_DUMP);
         }
             /* Linkonce section to be combined with .debug_info at link time.  */
-        else if ((do_debugging || do_debug_info)
-                 && const_strneq (name, ".gnu.linkonce.wi."))
+        else if ((do_debugging || do_debug_info) && const_strneq (name, ".gnu.linkonce.wi."))
             request_dump_bynumber (i, DEBUG_DUMP);
         else if (do_debug_frames && streq (name, ".eh_frame"))
             request_dump_bynumber (i, DEBUG_DUMP);
         else if (do_gdb_index && streq (name, ".gdb_index"))
             request_dump_bynumber (i, DEBUG_DUMP);
             /* Trace sections for Itanium VMS.  */
-        else if ((do_debugging || do_trace_info || do_trace_abbrevs
-                  || do_trace_aranges)
-                 && const_strneq (name, ".trace_"))
+        else if ((do_debugging || do_trace_info || do_trace_abbrevs || do_trace_aranges) && const_strneq (name, ".trace_"))
         {
             name += sizeof (".trace_") - 1;
-
             if (do_debugging
                 || (do_trace_info     && streq (name, "info"))
                 || (do_trace_abbrevs  && streq (name, "abbrev"))
-                || (do_trace_aranges  && streq (name, "aranges"))
-                    )
+                || (do_trace_aranges  && streq (name, "aranges")) )
                 request_dump_bynumber (i, DEBUG_DUMP);
         }
     }
@@ -5947,8 +5937,7 @@ process_section_headers (FILE * file)
             printf (_("       Type            Addr     Off    Size   ES   Lk Inf Al\n"));
         }
         else
-            printf
-                    (_("  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n"));
+            printf(_("  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n"));
     }
     else if (do_wide)
     {
@@ -5958,8 +5947,7 @@ process_section_headers (FILE * file)
             printf (_("       Type            Address          Off    Size   ES   Lk Inf Al\n"));
         }
         else
-            printf
-                    (_("  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al\n"));
+            printf(_("  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al\n"));
     }
     else
     {
@@ -5995,12 +5983,10 @@ process_section_headers (FILE * file)
             case SHT_GNU_versym:
             case SHT_REL:
             case SHT_RELA:
-                if (section->sh_link < 1
-                    || section->sh_link >= elf_header.e_shnum
+                if (section->sh_link < 1 || section->sh_link >= elf_header.e_shnum
                     || (section_headers[section->sh_link].sh_type != SHT_SYMTAB
-                        && section_headers[section->sh_link].sh_type != SHT_DYNSYM))
-                    warn (_("[%2u]: Link field (%u) should index a symtab section.\n"),
-                          i, section->sh_link);
+                    && section_headers[section->sh_link].sh_type != SHT_DYNSYM))
+                    warn (_("[%2u]: Link field (%u) should index a symtab section.\n"), i, section->sh_link);
                 break;
 
             case SHT_DYNAMIC:
@@ -6009,19 +5995,16 @@ process_section_headers (FILE * file)
             case SHT_GNU_verneed:
             case SHT_GNU_verdef:
             case SHT_GNU_LIBLIST:
-                if (section->sh_link < 1
-                    || section->sh_link >= elf_header.e_shnum
+                if (section->sh_link < 1 || section->sh_link >= elf_header.e_shnum
                     || section_headers[section->sh_link].sh_type != SHT_STRTAB)
-                    warn (_("[%2u]: Link field (%u) should index a string section.\n"),
-                          i, section->sh_link);
+                    warn (_("[%2u]: Link field (%u) should index a string section.\n"), i, section->sh_link);
                 break;
 
             case SHT_INIT_ARRAY:
             case SHT_FINI_ARRAY:
             case SHT_PREINIT_ARRAY:
                 if (section->sh_type < SHT_LOOS && section->sh_link != 0)
-                    warn (_("[%2u]: Unexpected value (%u) in link field.\n"),
-                          i, section->sh_link);
+                    warn (_("[%2u]: Unexpected value (%u) in link field.\n"), i, section->sh_link);
                 break;
 
             default:
@@ -6031,8 +6014,7 @@ process_section_headers (FILE * file)
 	     of SHT_PROGBITS but an sh_link field that links to the .stabstr
 	     section.  */
                 if (section->sh_type < SHT_LOOS && section->sh_link != 0)
-	    warn (_("[%2u]: Unexpected value (%u) in link field.\n"),
-		  i, section->sh_link);
+	                warn (_("[%2u]: Unexpected value (%u) in link field.\n"), i, section->sh_link);
 #endif
                 break;
         }
@@ -6051,16 +6033,14 @@ process_section_headers (FILE * file)
                         /* FIXME: Are other section types valid ?  */
                         && section_headers[section->sh_info].sh_type < SHT_LOOS))
                 {
-                    if (section->sh_info == 0
-                        && (streq (SECTION_NAME (section), ".rel.dyn")
-                            || streq (SECTION_NAME (section), ".rela.dyn")))
+                    if (section->sh_info == 0 && (streq (SECTION_NAME (section), ".rel.dyn")
+                                                  || streq (SECTION_NAME (section), ".rela.dyn")))
                         /* The .rel.dyn and .rela.dyn sections have an sh_info field
 		   of zero.  The relocations in these sections may apply
 		   to many different sections.  */
                         ;
                     else
-                        warn (_("[%2u]: Info field (%u) should index a relocatable section.\n"),
-                              i, section->sh_info);
+                        warn (_("[%2u]: Info field (%u) should index a relocatable section.\n"), i, section->sh_info);
                 }
                 break;
 
@@ -6071,8 +6051,7 @@ process_section_headers (FILE * file)
             case SHT_FINI_ARRAY:
             case SHT_PREINIT_ARRAY:
                 if (section->sh_info != 0)
-                    warn (_("[%2u]: Unexpected value (%u) in info field.\n"),
-                          i, section->sh_info);
+                    warn (_("[%2u]: Unexpected value (%u) in info field.\n"), i, section->sh_info);
                 break;
 
             case SHT_GROUP:
@@ -6096,19 +6075,18 @@ process_section_headers (FILE * file)
                         warn (_("[%2u]: Expected link to another section in info field"), i);
                 }
                 else if (section->sh_type < SHT_LOOS && section->sh_info != 0)
-                    warn (_("[%2u]: Unexpected value (%u) in info field.\n"),
-                          i, section->sh_info);
+                    warn (_("[%2u]: Unexpected value (%u) in info field.\n"), i, section->sh_info);
                 break;
         }
 
         printf ("  [%2u] ", i);
+        const char *pname = string_table + (section)->sh_name;
         if (do_section_details)
             printf ("%s\n      ", printable_section_name (section));
         else
             print_symbol (-17, SECTION_NAME (section));
 
-        printf (do_wide ? " %-15s " : " %-15.15s ",
-                get_section_type_name (section->sh_type));
+        printf (do_wide ? " %-15s " : " %-15.15s ", get_section_type_name (section->sh_type));
 
         if (is_32bit_elf)
         {
@@ -6158,8 +6136,7 @@ process_section_headers (FILE * file)
                     printf ("<%s> ", link_too_big);
                 else
                     printf ("%2u ", section->sh_link);
-                printf ("%3u %2lu\n", section->sh_info,
-                        (unsigned long) section->sh_addralign);
+                printf ("%3u %2lu\n", section->sh_info, (unsigned long) section->sh_addralign);
             }
             else
                 printf ("%2u %3u %2lu\n",
@@ -6168,8 +6145,7 @@ process_section_headers (FILE * file)
                         (unsigned long) section->sh_addralign);
 
             if (link_too_big && ! * link_too_big)
-                warn (_("section %u: sh_link value of %u is larger than the number of sections\n"),
-                      i, section->sh_link);
+                warn (_("section %u: sh_link value of %u is larger than the number of sections\n"), i, section->sh_link);
         }
         else if (do_wide)
         {
@@ -6216,8 +6192,7 @@ process_section_headers (FILE * file)
         }
         else if (do_section_details)
         {
-            printf ("       %-15.15s  ",
-                    get_section_type_name (section->sh_type));
+            printf ("       %-15.15s  ", get_section_type_name (section->sh_type));
             print_vma (section->sh_addr, LONG_HEX);
             if ((long) section->sh_offset == section->sh_offset)
                 printf ("  %16.16lx", (unsigned long) section->sh_offset);
@@ -6231,9 +6206,7 @@ process_section_headers (FILE * file)
             putchar (' ');
             print_vma (section->sh_entsize, LONG_HEX);
 
-            printf ("  %-16u  %lu\n",
-                    section->sh_info,
-                    (unsigned long) section->sh_addralign);
+            printf ("  %-16u  %lu\n", section->sh_info, (unsigned long) section->sh_addralign);
         }
         else
         {
@@ -6253,10 +6226,7 @@ process_section_headers (FILE * file)
 
             printf (" %3s ", get_elf_section_flags (section->sh_flags));
 
-            printf ("     %2u   %3u     %lu\n",
-                    section->sh_link,
-                    section->sh_info,
-                    (unsigned long) section->sh_addralign);
+            printf ("     %2u   %3u     %lu\n", section->sh_link, section->sh_info, (unsigned long) section->sh_addralign);
         }
 
         if (do_section_details)
@@ -6269,13 +6239,10 @@ process_section_headers (FILE * file)
                 unsigned char buf[24];
 
                 assert (sizeof (buf) >= sizeof (Elf64_External_Chdr));
-                if (get_data (&buf, (FILE *) file, section->sh_offset, 1,
-                              sizeof (buf), _("compression header")))
+                if (get_data (&buf, (FILE *) file, section->sh_offset, 1, sizeof (buf), _("compression header")))
                 {
                     Elf_Internal_Chdr chdr;
-
                     (void) get_compression_header (&chdr, buf);
-
                     if (chdr.ch_type == ELFCOMPRESS_ZLIB)
                         printf ("       ZLIB, ");
                     else
@@ -10968,8 +10935,7 @@ get_symbol_version_string (FILE *                       file,
 }
 
 /* Dump the symbol table.  */
-static int
-process_symbol_table (FILE * file)
+static int process_symbol_table (FILE * file)
 {
     Elf_Internal_Shdr * section;
     bfd_size_type nbuckets = 0;
