@@ -328,9 +328,7 @@ static const char *get_symbol_version_string
    and REASON is not NULL then emit an error message using REASON as part of the
    context.  */
 
-static void *
-get_data (void * var, FILE * file, unsigned long offset, bfd_size_type size,
-          bfd_size_type nmemb, const char * reason)
+static void *get_data (void * var, FILE * file, unsigned long offset, bfd_size_type size, bfd_size_type nmemb, const char * reason)
 {
     void * mvar;
     bfd_size_type amt = size * nmemb;
@@ -553,8 +551,7 @@ static unsigned int print_symbol (int width, const char *symbol)
    the given section's name.  Like print_symbol, except that it does not try
    to print multibyte characters, it just interprets them as hex values.  */
 
-static const char *
-printable_section_name (const Elf_Internal_Shdr * sec)
+static const char *printable_section_name (const Elf_Internal_Shdr * sec)
 {
 #define MAX_PRINT_SEC_NAME_LEN 128
     static char  sec_name_buf [MAX_PRINT_SEC_NAME_LEN + 1];
@@ -834,15 +831,13 @@ slurp_rela_relocs (FILE * file,
     {
         Elf32_External_Rela * erelas;
 
-        erelas = (Elf32_External_Rela *) get_data (NULL, file, rel_offset, 1,
-                                                   rel_size, _("32-bit relocation data"));
+        erelas = (Elf32_External_Rela *) get_data (NULL, file, rel_offset, 1, rel_size, _("32-bit relocation data"));
         if (!erelas)
             return 0;
 
         nrelas = rel_size / sizeof (Elf32_External_Rela);
 
-        relas = (Elf_Internal_Rela *) cmalloc (nrelas,
-                                               sizeof (Elf_Internal_Rela));
+        relas = (Elf_Internal_Rela *) cmalloc (nrelas, sizeof (Elf_Internal_Rela));
 
         if (relas == NULL)
         {
@@ -864,15 +859,13 @@ slurp_rela_relocs (FILE * file,
     {
         Elf64_External_Rela * erelas;
 
-        erelas = (Elf64_External_Rela *) get_data (NULL, file, rel_offset, 1,
-                                                   rel_size, _("64-bit relocation data"));
+        erelas = (Elf64_External_Rela *) get_data (NULL, file, rel_offset, 1, rel_size, _("64-bit relocation data"));
         if (!erelas)
             return 0;
 
         nrelas = rel_size / sizeof (Elf64_External_Rela);
 
-        relas = (Elf_Internal_Rela *) cmalloc (nrelas,
-                                               sizeof (Elf_Internal_Rela));
+        relas = (Elf_Internal_Rela *) cmalloc (nrelas, sizeof (Elf_Internal_Rela));
 
         if (relas == NULL)
         {
@@ -891,8 +884,7 @@ slurp_rela_relocs (FILE * file,
 	     warning.  We know that if we do not have a 64 bit data
 	     type that we will never execute this code anyway.  */
 #ifdef BFD64
-            if (elf_header.e_machine == EM_MIPS
-                && elf_header.e_ident[EI_DATA] != ELFDATA2MSB)
+            if (elf_header.e_machine == EM_MIPS && elf_header.e_ident[EI_DATA] != ELFDATA2MSB)
             {
                 /* In little-endian objects, r_info isn't really a
 		 64-bit little-endian value: it has a 32-bit
@@ -917,8 +909,7 @@ slurp_rela_relocs (FILE * file,
     return 1;
 }
 
-static int
-slurp_rel_relocs (FILE * file,
+static int slurp_rel_relocs (FILE * file,
                   unsigned long rel_offset,
                   unsigned long rel_size,
                   Elf_Internal_Rela ** relsp,
@@ -932,8 +923,7 @@ slurp_rel_relocs (FILE * file,
     {
         Elf32_External_Rel * erels;
 
-        erels = (Elf32_External_Rel *) get_data (NULL, file, rel_offset, 1,
-                                                 rel_size, _("32-bit relocation data"));
+        erels = (Elf32_External_Rel *) get_data (NULL, file, rel_offset, 1, rel_size, _("32-bit relocation data"));
         if (!erels)
             return 0;
 
@@ -961,8 +951,7 @@ slurp_rel_relocs (FILE * file,
     {
         Elf64_External_Rel * erels;
 
-        erels = (Elf64_External_Rel *) get_data (NULL, file, rel_offset, 1,
-                                                 rel_size, _("64-bit relocation data"));
+        erels = (Elf64_External_Rel *) get_data (NULL, file, rel_offset, 1, rel_size, _("64-bit relocation data"));
         if (!erels)
             return 0;
 
@@ -1136,9 +1125,7 @@ dump_relocations (FILE * file,
 
         if (is_32bit_elf)
         {
-            printf ("%8.8lx  %8.8lx ",
-                    (unsigned long) offset & 0xffffffff,
-                    (unsigned long) inf & 0xffffffff);
+            printf ("%8.8lx  %8.8lx ", (unsigned long) offset & 0xffffffff, (unsigned long) inf & 0xffffffff);
         }
         else
         {
@@ -1520,8 +1507,7 @@ dump_relocations (FILE * file,
 
                 psym = symtab + symtab_index;
 
-                version_string
-                        = get_symbol_version_string (file, is_dynsym,
+                version_string = get_symbol_version_string (file, is_dynsym,
                                                      strtab, strtablen,
                                                      symtab_index,
                                                      psym,
@@ -1546,23 +1532,19 @@ dump_relocations (FILE * file,
 		     its name followed by () as a hint that the symbol is
 		     invoked.  */
 
-                    if (strtab == NULL
-                        || psym->st_name == 0
-                        || psym->st_name >= strtablen)
+                    if (strtab == NULL || psym->st_name == 0 || psym->st_name >= strtablen)
                         name = "??";
                     else
                         name = strtab + psym->st_name;
 
                     len = print_symbol (width, name);
                     if (version_string)
-                        printf (sym_info == symbol_public ? "@@%s" : "@%s",
-                                version_string);
+                        printf (sym_info == symbol_public ? "@@%s" : "@%s", version_string);
                     printf ("()%-*s", len <= width ? (width + 1) - len : 1, " ");
                 }
                 else
                 {
                     print_vma (psym->st_value, LONG_HEX);
-
                     printf (is_32bit_elf ? "   " : " ");
                 }
 
@@ -1596,13 +1578,11 @@ dump_relocations (FILE * file,
                                  && elf_header.e_ident[EI_OSABI] == ELFOSABI_HPUX
                                  && psym->st_shndx == SHN_IA_64_ANSI_COMMON)
                             sec_name = "ANSI_COM";
-                        else if (is_ia64_vms ()
-                                 && psym->st_shndx == SHN_IA_64_VMS_SYMVEC)
+                        else if (is_ia64_vms () && psym->st_shndx == SHN_IA_64_VMS_SYMVEC)
                             sec_name = "VMS_SYMVEC";
                         else
                         {
-                            sprintf (name_buf, "<section 0x%x>",
-                                     (unsigned int) psym->st_shndx);
+                            sprintf (name_buf, "<section 0x%x>", (unsigned int) psym->st_shndx);
                             sec_name = name_buf;
                         }
                     }
@@ -1616,8 +1596,7 @@ dump_relocations (FILE * file,
                 {
                     print_symbol (22, strtab + psym->st_name);
                     if (version_string)
-                        printf (sym_info == symbol_public ? "@@%s" : "@%s",
-                                version_string);
+                        printf (sym_info == symbol_public ? "@@%s" : "@%s", version_string);
                 }
 
                 if (is_rela)
@@ -1660,16 +1639,14 @@ dump_relocations (FILE * file,
             printf ("                    Type2: ");
 
             if (rtype2 == NULL)
-                printf (_("unrecognized: %-7lx"),
-                        (unsigned long) type2 & 0xffffffff);
+                printf (_("unrecognized: %-7lx"), (unsigned long) type2 & 0xffffffff);
             else
                 printf ("%-17.17s", rtype2);
 
             printf ("\n                    Type3: ");
 
             if (rtype3 == NULL)
-                printf (_("unrecognized: %-7lx"),
-                        (unsigned long) type3 & 0xffffffff);
+                printf (_("unrecognized: %-7lx"), (unsigned long) type3 & 0xffffffff);
             else
                 printf ("%-17.17s", rtype3);
 
@@ -1681,8 +1658,7 @@ dump_relocations (FILE * file,
     free (rels);
 }
 
-static const char *
-get_mips_dynamic_type (unsigned long type)
+static const char *get_mips_dynamic_type (unsigned long type)
 {
     switch (type)
     {
@@ -1737,12 +1713,12 @@ get_mips_dynamic_type (unsigned long type)
     }
 }
 
-static const char *
-get_sparc64_dynamic_type (unsigned long type)
+static const char *get_sparc64_dynamic_type (unsigned long type)
 {
     switch (type)
     {
-        case DT_SPARC_REGISTER: return "SPARC_REGISTER";
+        case DT_SPARC_REGISTER:
+            return "SPARC_REGISTER";
         default:
             return NULL;
     }
@@ -4792,17 +4768,13 @@ process_program_headers (FILE * file)
             printf (_("\nProgram Headers:\n"));
 
         if (is_32bit_elf)
-            printf
-                    (_("  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align\n"));
+            printf(_("  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align\n"));
         else if (do_wide)
-            printf
-                    (_("  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align\n"));
+            printf(_("  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align\n"));
         else
         {
-            printf
-                    (_("  Type           Offset             VirtAddr           PhysAddr\n"));
-            printf
-                    (_("                 FileSiz            MemSiz              Flags  Align\n"));
+            printf(_("  Type           Offset             VirtAddr           PhysAddr\n"));
+            printf(_("                 FileSiz            MemSiz              Flags  Align\n"));
         }
     }
 
@@ -9186,8 +9158,7 @@ print_dynamic_flags (bfd_vma flags)
 
 /* Parse and display the contents of the dynamic section.  */
 
-static int
-process_dynamic_section (FILE * file)
+static int process_dynamic_section (FILE * file)
 {
     Elf_Internal_Dyn * entry;
 
@@ -9195,7 +9166,6 @@ process_dynamic_section (FILE * file)
     {
         if (do_dynamic)
             printf (_("\nThere is no dynamic section in this file.\n"));
-
         return 1;
     }
 
@@ -9285,8 +9255,7 @@ process_dynamic_section (FILE * file)
 
             if (str_tab_len < 1)
             {
-                error
-                        (_("Unable to determine the length of the dynamic string table\n"));
+                error(_("Unable to determine the length of the dynamic string table\n"));
                 continue;
             }
 
@@ -9314,14 +9283,12 @@ process_dynamic_section (FILE * file)
                 /* PR binutils/17531: A corrupt file can trigger this test.
 		 So do not use an assert, instead generate an error message.  */
                 if (sizeof (Elf_External_Syminfo) != entry->d_un.d_val)
-                    error (_("Bad value (%d) for SYMINENT entry\n"),
-                           (int) entry->d_un.d_val);
+                    error (_("Bad value (%d) for SYMINENT entry\n"), (int) entry->d_un.d_val);
             }
             else if (entry->d_tag == DT_SYMINSZ)
                 syminsz = entry->d_un.d_val;
             else if (entry->d_tag == DT_SYMINFO)
-                dynamic_syminfo_offset = offset_from_vma (file, entry->d_un.d_val,
-                                                          syminsz);
+                dynamic_syminfo_offset = offset_from_vma (file, entry->d_un.d_val, syminsz);
         }
 
         if (dynamic_syminfo_offset != 0 && syminsz != 0)
@@ -9332,16 +9299,14 @@ process_dynamic_section (FILE * file)
 
             /* There is a syminfo section.  Read the data.  */
             extsyminfo = (Elf_External_Syminfo *)
-                    get_data (NULL, file, dynamic_syminfo_offset, 1, syminsz,
-                              _("symbol information"));
+                    get_data (NULL, file, dynamic_syminfo_offset, 1, syminsz, _("symbol information"));
             if (!extsyminfo)
                 return 0;
 
             dynamic_syminfo = (Elf_Internal_Syminfo *) malloc (syminsz);
             if (dynamic_syminfo == NULL)
             {
-                error (_("Out of memory allocating %lu byte for dynamic symbol info\n"),
-                       (unsigned long) syminsz);
+                error (_("Out of memory allocating %lu byte for dynamic symbol info\n"), (unsigned long) syminsz);
                 return 0;
             }
 
@@ -9359,8 +9324,7 @@ process_dynamic_section (FILE * file)
     }
 
     if (do_dynamic && dynamic_addr)
-        printf (_("\nDynamic section at offset 0x%lx contains %lu entries:\n"),
-                dynamic_addr, (unsigned long) dynamic_nent);
+        printf (_("\nDynamic section at offset 0x%lx contains %lu entries:\n"), dynamic_addr, (unsigned long) dynamic_nent);
     if (do_dynamic)
         printf (_("  Tag        Type                         Name/Value\n"));
 
@@ -9371,14 +9335,10 @@ process_dynamic_section (FILE * file)
         if (do_dynamic)
         {
             const char * dtype;
-
             putchar (' ');
             print_vma (entry->d_tag, FULL_HEX);
             dtype = get_dynamic_type (entry->d_tag);
-            printf (" (%s)%*s", dtype,
-                    ((is_32bit_elf ? 27 : 19)
-                     - (int) strlen (dtype)),
-                    " ");
+            printf (" (%s)%*s", dtype, ((is_32bit_elf ? 27 : 19) - (int) strlen (dtype)), " ");
         }
 
         switch (entry->d_tag)
@@ -9785,8 +9745,7 @@ process_dynamic_section (FILE * file)
                     tmp = gmtime (&atime);
                     /* PR 17533 file: 041-1244816-0.004.  */
                     if (tmp == NULL)
-                        printf (_("<corrupt time val: %lx"),
-                                (unsigned long) atime);
+                        printf (_("<corrupt time val: %lx"), (unsigned long) atime);
                     else
                         printf ("%04u-%02u-%02uT%02u:%02u:%02u\n",
                                 tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
@@ -9806,8 +9765,7 @@ process_dynamic_section (FILE * file)
 
             default:
                 if ((entry->d_tag >= DT_VERSYM) && (entry->d_tag <= DT_VERNEEDNUM))
-                    version_info[DT_VERSIONTAGIDX (entry->d_tag)] =
-                            entry->d_un.d_val;
+                    version_info[DT_VERSIONTAGIDX (entry->d_tag)] = entry->d_un.d_val;
 
                 if (do_dynamic)
                 {
@@ -9835,8 +9793,7 @@ process_dynamic_section (FILE * file)
     return 1;
 }
 
-static char *
-get_ver_flags (unsigned int flags)
+static char *get_ver_flags (unsigned int flags)
 {
     static char buff[32];
 
@@ -9852,7 +9809,6 @@ get_ver_flags (unsigned int flags)
     {
         if (flags & VER_FLG_BASE)
             strcat (buff, "| ");
-
         strcat (buff, "WEAK ");
     }
 
@@ -9860,7 +9816,6 @@ get_ver_flags (unsigned int flags)
     {
         if (flags & (VER_FLG_BASE|VER_FLG_WEAK))
             strcat (buff, "| ");
-
         strcat (buff, "INFO ");
     }
 
@@ -9872,8 +9827,7 @@ get_ver_flags (unsigned int flags)
 
 /* Display the contents of the version sections.  */
 
-static int
-process_version_sections (FILE * file)
+static int process_version_sections (FILE * file)
 {
     Elf_Internal_Shdr * section;
     unsigned i;
@@ -9908,8 +9862,7 @@ process_version_sections (FILE * file)
                         printable_section_name_from_index (section->sh_link));
 
                 edefs = (Elf_External_Verdef *)
-                        get_data (NULL, file, section->sh_offset, 1,section->sh_size,
-                                  _("version definition section"));
+                        get_data (NULL, file, section->sh_offset, 1,section->sh_size, _("version definition section"));
                 if (!edefs)
                     break;
                 endbuf = (char *) edefs + section->sh_size;
@@ -9942,20 +9895,16 @@ process_version_sections (FILE * file)
                     ent.vd_aux     = BYTE_GET (edef->vd_aux);
                     ent.vd_next    = BYTE_GET (edef->vd_next);
 
-                    printf (_("  %#06x: Rev: %d  Flags: %s"),
-                            idx, ent.vd_version, get_ver_flags (ent.vd_flags));
+                    printf (_("  %#06x: Rev: %d  Flags: %s"), idx, ent.vd_version, get_ver_flags (ent.vd_flags));
 
-                    printf (_("  Index: %d  Cnt: %d  "),
-                            ent.vd_ndx, ent.vd_cnt);
+                    printf (_("  Index: %d  Cnt: %d  "), ent.vd_ndx, ent.vd_cnt);
 
                     /* Check for overflow.  */
                     if (ent.vd_aux > (size_t) (endbuf - vstart))
                         break;
 
                     vstart += ent.vd_aux;
-
                     eaux = (Elf_External_Verdaux *) vstart;
-
                     aux.vda_name = BYTE_GET (eaux->vda_name);
                     aux.vda_next = BYTE_GET (eaux->vda_next);
 
@@ -9983,11 +9932,9 @@ process_version_sections (FILE * file)
                         aux.vda_next = BYTE_GET (eaux->vda_next);
 
                         if (VALID_DYNAMIC_NAME (aux.vda_name))
-                            printf (_("  %#06x: Parent %d: %s\n"),
-                                    isum, j, GET_DYNAMIC_NAME (aux.vda_name));
+                            printf (_("  %#06x: Parent %d: %s\n"), isum, j, GET_DYNAMIC_NAME (aux.vda_name));
                         else
-                            printf (_("  %#06x: Parent %d, name index: %ld\n"),
-                                    isum, j, aux.vda_name);
+                            printf (_("  %#06x: Parent %d, name index: %ld\n"), isum, j, aux.vda_name);
                     }
 
                     if (j < ent.vd_cnt)
@@ -10086,21 +10033,16 @@ process_version_sections (FILE * file)
                         aux.vna_next  = BYTE_GET (eaux->vna_next);
 
                         if (VALID_DYNAMIC_NAME (aux.vna_name))
-                            printf (_("  %#06x:   Name: %s"),
-                                    isum, GET_DYNAMIC_NAME (aux.vna_name));
+                            printf (_("  %#06x:   Name: %s"), isum, GET_DYNAMIC_NAME (aux.vna_name));
                         else
-                            printf (_("  %#06x:   Name index: %lx"),
-                                    isum, aux.vna_name);
+                            printf (_("  %#06x:   Name index: %lx"), isum, aux.vna_name);
 
-                        printf (_("  Flags: %s  Version: %d\n"),
-                                get_ver_flags (aux.vna_flags), aux.vna_other);
+                        printf (_("  Flags: %s  Version: %d\n"), get_ver_flags (aux.vna_flags), aux.vna_other);
 
                         /* Check for overflow.  */
-                        if (aux.vna_next > (size_t) (endbuf - vstart)
-                            || (aux.vna_next == 0 && j < ent.vn_cnt - 1))
+                        if (aux.vna_next > (size_t) (endbuf - vstart) || (aux.vna_next == 0 && j < ent.vn_cnt - 1))
                         {
-                            warn (_("Invalid vna_next field of %lx\n"),
-                                  aux.vna_next);
+                            warn (_("Invalid vna_next field of %lx\n"), aux.vna_next);
                             j = ent.vn_cnt;
                             break;
                         }
@@ -10191,8 +10133,7 @@ process_version_sections (FILE * file)
                 data = (short unsigned int *) cmalloc (total, sizeof (short));
 
                 for (cnt = total; cnt --;)
-                    data[cnt] = byte_get (edata + cnt * sizeof (short),
-                                          sizeof (short));
+                    data[cnt] = byte_get (edata + cnt * sizeof (short), sizeof (short));
 
                 free (edata);
 
@@ -10244,8 +10185,7 @@ process_version_sections (FILE * file)
                                         Elf_External_Vernaux evna;
                                         unsigned long a_off;
 
-                                        if (get_data (&evn, file, offset, sizeof (evn), 1,
-                                                      _("version need")) == NULL)
+                                        if (get_data (&evn, file, offset, sizeof (evn), 1, _("version need")) == NULL)
                                             break;
 
                                         ivn.vn_aux  = BYTE_GET (evn.vn_aux);
@@ -10255,8 +10195,7 @@ process_version_sections (FILE * file)
 
                                         do
                                         {
-                                            if (get_data (&evna, file, a_off, sizeof (evna),
-                                                          1, _("version need aux (2)")) == NULL)
+                                            if (get_data (&evna, file, a_off, sizeof (evna), 1, _("version need aux (2)")) == NULL)
                                             {
                                                 ivna.vna_next  = 0;
                                                 ivna.vna_other = 0;
@@ -10301,8 +10240,7 @@ process_version_sections (FILE * file)
 
                                     do
                                     {
-                                        if (get_data (&evd, file, offset, sizeof (evd), 1,
-                                                      _("version def")) == NULL)
+                                        if (get_data (&evd, file, offset, sizeof (evd), 1, _("version def")) == NULL)
                                         {
                                             ivd.vd_next = 0;
                                             /* PR 17531: file: 046-1082287-0.004.  */
@@ -10317,8 +10255,7 @@ process_version_sections (FILE * file)
 
                                         offset += ivd.vd_next;
                                     }
-                                    while (ivd.vd_ndx != (data[cnt + j] & VERSYM_VERSION)
-                                           && ivd.vd_next != 0);
+                                    while (ivd.vd_ndx != (data[cnt + j] & VERSYM_VERSION) && ivd.vd_next != 0);
 
                                     if (ivd.vd_ndx == (data[cnt + j] & VERSYM_VERSION))
                                     {
@@ -10344,10 +10281,7 @@ process_version_sections (FILE * file)
                                     }
                                 }
                                 if (name != NULL)
-                                    nn += printf ("(%s%-*s",
-                                                  name,
-                                                  12 - (int) strlen (name),
-                                                  ")");
+                                    nn += printf ("(%s%-*s", name, 12 - (int) strlen (name), ")");
 
                                 if (nn < 18)
                                     printf ("%*c", 18 - nn, ' ');
